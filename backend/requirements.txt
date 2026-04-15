@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pydantic
+astropy
+astroquery
+requests
+opencv-python-headless
+python-multipart
+# gphoto2 python wrapper (Requires libgphoto2 installed on the debian host/container)
+gphoto2

@@ -1,0 +1,69 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
+from services.celestial import CelestialMath
+from services.astrometry import AstrometryService
+
+app = FastAPI(title="VLTTECH API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class CityRequest(BaseModel):
+    city_name: str
+
+class TargetRequest(BaseModel):
+    target_name: str
+    lat: float
+    lon: float
+
+class PlateSolveRequest(BaseModel):
+    api_key: str
+    target_ra: float
+    target_dec: float
+    mag_dec: float
+
+@app.post("/api/location/search")
+def search_location(req: CityRequest):
+    data = CelestialMath.get_city_location(req.city_name)
+    if not data:
+        raise HTTPException(status_code=404, detail="City not found")
+    return data
+
+@app.post("/api/target/calculate")
+def calculate_target(req: TargetRequest):
+    data = CelestialMath.get_target_coordinates(req.target_name, req.lat, req.lon)
+    if not data:
+        raise HTTPException(status_code=404, detail="Target not found in Simbad")
+    return data
+
+@app.post("/api/hardware/platesolve")
+def platesolve(req: PlateSolveRequest):
+    # Mocking capture integration
+    astro = AstrometryService(req.api_key)
+    result = astro.upload_and_solve("/tmp/mock.jpg")
+    
+    correction = CelestialMath.calculate_equatorial_correction(
+        result["solved_ra"], result["solved_dec"], req.target_ra, req.target_dec, req.mag_dec
+    )
+    
+    return {
+        "solved_position": result,
+        "correction": correction
+    }
+
+@app.get("/api/hardware/scan")
+def scan_hardware():
+    return {
+        "dslr": [{"id": "mock_dslr_1", "name": "Canon EOS 60D (Mock)"}],
+        "webcams": [{"id": "mock_webcam_1", "name": "Logitech C920 (Mock)"}]
+    }
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,0 +1,237 @@
+:root {
+  --bg-color: #0b0c10;
+  --glass-bg: rgba(30, 35, 45, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --primary-color: #4facfe;
+  --success-color: #00f2fe;
+  --warning-color: #f6d365;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  /* Premium Dark Nebula background */
+  background-image: radial-gradient(circle at 50% 0%, #1a1b26 0%, #0b0c10 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3 { font-weight: 600; letter-spacing: 0.5px; }
+.subtitle {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: var(--primary-color);
+  text-transform: uppercase;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Layout */
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.glass-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  background: rgba(15, 20, 25, 0.5);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Target Section */
+.target-section .input-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.results {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+}
+.stat-box {
+  background: rgba(0,0,0,0.3);
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+}
+.stat-box span { font-size: 0.75rem; color: var(--text-muted); }
+.stat-box strong { font-size: 1.25rem; font-weight: 400; color: var(--primary-color); }
+
+/* Cameras */
+.camera-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.camera-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+}
+.badge.offline { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.badge.online { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+.camera-feed {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  /* Premium placeholder image of celestial objects */
+  background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1600&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+.camera-feed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* Dim image slightly */
+}
+
+.placeholder-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  z-index: 1;
+}
+
+/* Controls */
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flex-col label { font-size: 0.85rem; color: var(--text-muted); }
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+/* Inputs & Buttons */
+input, select {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+input:focus, select:focus {
+  border-color: var(--primary-color);
+}
+
+.glass-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.glass-btn:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+.btn-primary { background: linear-gradient(135deg, rgba(79,172,254,0.2) 0%, rgba(0,242,254,0.2) 100%); border-color: rgba(79,172,254,0.5); color: #fff;}
+.btn-success { background: linear-gradient(135deg, rgba(0,242,254,0.2) 0%, rgba(79,172,254,0.2) 100%); border-color: rgba(0,242,254,0.5); flex-grow: 1; padding: 16px; font-size: 1.1rem;}
+.btn-warning { background: linear-gradient(135deg, rgba(246,211,101,0.2) 0%, rgba(253,160,133,0.2) 100%); border-color: rgba(246,211,101,0.5); flex-grow: 1; padding: 16px; font-size: 1.1rem; color: #f6d365;}
+
+.focus-glow:hover {
+  box-shadow: 0 0 20px rgba(0,242,254,0.3);
+}
+.btn-warning.focus-glow:hover {
+  box-shadow: 0 0 20px rgba(246,211,101,0.3);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mt-2 { margin-top: 16px; }
+
+@media (max-width: 900px) {
+  .camera-grid { grid-template-columns: 1fr; }
+  .control-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 500px) {
+  .control-grid { grid-template-columns: 1fr; }
+  .action-buttons { flex-direction: column; }
+}

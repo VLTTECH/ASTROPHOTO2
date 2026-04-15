@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: vlttech-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - vlttech_sessions:/var/opt/vlttech/sessions
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+      - /dev/video0:/dev/video0
+    privileged: true
+    environment:
+      - TZ=America/Sao_Paulo
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: vlttech-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  samba:
+    image: dperson/samba
+    container_name: vlttech-samba
+    ports:
+      - "139:139"
+      - "445:445"
+    volumes:
+      - vlttech_sessions:/var/opt/vlttech/sessions
+    command: '-s "AstroPhotos;/var/opt/vlttech/sessions;yes;read only;no;all" -n -p'
+    restart: always
+
+volumes:
+  vlttech_sessions:
