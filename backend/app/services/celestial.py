@@ -10,8 +10,10 @@ class CelestialMath:
         """
         Queries Open-Meteo (more permissive than OSM) to get Lat/Lon for a city.
         """
+        import urllib.parse
         try:
-            url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1&language=pt&format=json"
+            city_encoded = urllib.parse.quote(city_name)
+            url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_encoded}&count=1&language=pt&format=json"
             r = requests.get(url)
             if r.status_code == 200:
                 resp = r.json()
@@ -22,7 +24,10 @@ class CelestialMath:
                         "lon": float(data["longitude"]),
                         "mag_dec": -21.0 # Ex: Declinação magnética padrão BR
                     }
-        except Exception:
+            else:
+                print(f"Open-Meteo returned status {r.status_code}")
+        except Exception as e:
+            print("Error in geocoding city lookup:", e)
             return None
         return None
 
