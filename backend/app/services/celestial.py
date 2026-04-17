@@ -25,10 +25,10 @@ class CelestialMath:
                         "mag_dec": -21.0 # Ex: Declinação magnética padrão BR
                     }
             else:
-                print(f"Open-Meteo returned status {r.status_code}")
+                return {"error": f"API HTTP Error {r.status_code}"}
         except Exception as e:
             print("Error in geocoding city lookup:", e)
-            return None
+            return {"error": f"Python Exception: {str(e)}"}
         return None
 
     @staticmethod

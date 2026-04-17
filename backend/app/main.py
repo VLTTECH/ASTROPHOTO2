@@ -56,6 +56,8 @@ def update_settings(req: dict):
 @app.post("/api/location/search")
 def search_location(req: CityRequest):
     data = CelestialMath.get_city_location(req.city_name)
+    if isinstance(data, dict) and "error" in data:
+        raise HTTPException(status_code=500, detail=data["error"])
     if not data:
         raise HTTPException(status_code=404, detail="City not found")
     return data

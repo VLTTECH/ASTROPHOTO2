@@ -41,7 +41,8 @@ function App() {
             const newSettings = {...settings, lat: data.lat, lon: data.lon, mag_dec: data.mag_dec};
             await saveSettings(newSettings);
         } else {
-            alert('Cidade não encontrada.');
+            const errText = await res.text();
+            alert(`Falha (${res.status}): ${errText}`);
         }
     } catch (e) {
         console.error(e);
