@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+import json
+import os
 from services.celestial import CelestialMath
 from services.astrometry import AstrometryService
 
@@ -14,6 +16,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+DATA_FILE = "/app/data/settings.json"
+
+def get_db():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_db(data):
+    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
 
 class CityRequest(BaseModel):
     city_name: str
@@ -28,6 +43,15 @@ class PlateSolveRequest(BaseModel):
     target_ra: float
     target_dec: float
     mag_dec: float
+
+@app.get("/api/settings")
+def load_settings():
+    return get_db()
+
+@app.post("/api/settings")
+def update_settings(req: dict):
+    save_db(req)
+    return {"status": "saved"}
 
 @app.post("/api/location/search")
 def search_location(req: CityRequest):

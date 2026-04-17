@@ -1,8 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 function App() {
   const [configOpen, setConfigOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
+  const [settings, setSettings] = useState({ lat: null, lon: null, mag_dec: null, api_key: '' });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (configOpen) {
+      fetch('/api/settings')
+        .then(r => r.json())
+        .then(data => {
+          if (data) setSettings(data);
+        })
+        .catch(e => console.error("Error loading settings:", e));
+    }
+  }, [configOpen]);
+
+  const saveSettings = async (newData) => {
+    setSettings(newData);
+    await fetch('/api/settings', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(newData)
+    });
+  };
+
+  const handleCitySearch = async () => {
+    if (!citySearch) return;
+    setLoading(true);
+    try {
+        const res = await fetch('/api/location/search', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({city_name: citySearch})
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const newSettings = {...settings, lat: data.lat, lon: data.lon, mag_dec: data.mag_dec};
+            await saveSettings(newSettings);
+        } else {
+            alert('Cidade não encontrada.');
+        }
+    } catch (e) {
+        console.error(e);
+    }
+    setLoading(false);
+  };
+
+  const handleClear = async () => {
+     const empty = { lat: null, lon: null, mag_dec: null, api_key: '' };
+     await saveSettings(empty);
+     setCitySearch('');
+  };
 
   return (
     <div className="app-container">
@@ -101,7 +152,7 @@ function App() {
         </section>
       </main>
 
-      {/* Settings Modal (Placeholder for now) */}
+      {/* Settings Modal */}
       {configOpen && (
         <div className="modal-overlay">
           <motion.div 
@@ -110,15 +161,37 @@ function App() {
             className="glass-panel modal-content"
           >
             <h2>System Configuration</h2>
-            <div className="input-group">
-              <label>Location (City Search)</label>
-              <input type="text" placeholder="Type city name..." />
+            
+            <div className="input-group" style={{ alignItems: 'flex-end', flexDirection: 'row' }}>
+              <div className="flex-col" style={{flex: 1}}>
+                 <label>Location (City Search)</label>
+                 <input type="text" value={citySearch} onChange={e => setCitySearch(e.target.value)} placeholder="Type city name..." />
+              </div>
+              <button className="glass-btn" onClick={handleCitySearch} disabled={loading}>
+                 {loading ? "..." : "Search"}
+              </button>
             </div>
-            <div className="input-group">
+            
+            {settings.lat !== null && (
+                <div style={{fontSize: '0.85rem', color: '#00f2fe', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0, 242, 254, 0.2)'}}>
+                  📍 <strong>Lat:</strong> {settings.lat} | <strong>Lon:</strong> {settings.lon} | <strong>Mag Dec:</strong> {settings.mag_dec}°
+                </div>
+            )}
+
+            <div className="input-group flex-col">
               <label>Astrometry API Key</label>
-              <input type="password" placeholder="Key..." />
+              <input type="password" 
+                     value={settings.api_key || ''} 
+                     onChange={e => setSettings(s => ({...s, api_key: e.target.value}))} 
+                     onBlur={() => saveSettings(settings)}
+                     placeholder="Your nova.astrometry.net Key..." />
+              {settings.api_key && <small style={{color: '#86efac', marginTop: '4px'}}>✓ API Key está cadastrada no sistema.</small>}
             </div>
-            <button className="glass-btn btn-primary mt-2" onClick={() => setConfigOpen(false)}>Save & Close</button>
+
+            <div style={{display: 'flex', gap: '10px', marginTop: '16px'}}>
+                <button className="glass-btn btn-primary" style={{flex: 1}} onClick={() => setConfigOpen(false)}>Close & Save</button>
+                <button className="glass-btn" style={{backgroundColor: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.5)'}} onClick={handleClear}>Limpar Dados</button>
+            </div>
           </motion.div>
         </div>
       )}
