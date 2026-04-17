@@ -8,21 +8,20 @@ class CelestialMath:
     @staticmethod
     def get_city_location(city_name: str):
         """
-        Queries Nominatim (OpenStreetMap) to get Lat/Lon for a city.
-        In a real app, magnetic declination can be fetched via NOAA API.
-        For MVP, we return a mock magnetic declination of 5.0 degrees.
+        Queries Open-Meteo (more permissive than OSM) to get Lat/Lon for a city.
         """
         try:
-            url = f"https://nominatim.openstreetmap.org/search?q={city_name}&format=json&limit=1"
-            headers = {"User-Agent": "VLTTECH-Astro-App/1.0"}
-            r = requests.get(url, headers=headers)
-            if r.status_code == 200 and len(r.json()) > 0:
-                data = r.json()[0]
-                return {
-                    "lat": float(data["lat"]),
-                    "lon": float(data["lon"]),
-                    "mag_dec": -21.0 # Ex: Declinação magnética padrão BR
-                }
+            url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1&language=pt&format=json"
+            r = requests.get(url)
+            if r.status_code == 200:
+                resp = r.json()
+                if "results" in resp and len(resp["results"]) > 0:
+                    data = resp["results"][0]
+                    return {
+                        "lat": float(data["latitude"]),
+                        "lon": float(data["longitude"]),
+                        "mag_dec": -21.0 # Ex: Declinação magnética padrão BR
+                    }
         except Exception:
             return None
         return None

@@ -33,7 +33,7 @@ services:
       - "445:445"
     volumes:
       - vlttech_sessions:/var/opt/vlttech/sessions
-    command: '-s "AstroPhotos;/var/opt/vlttech/sessions;yes;read only;no;all" -n -p'
+    command: '-s "AstroPhotos;/var/opt/vlttech/sessions;yes;yes;yes" -n -p -W'
     restart: always
 
 volumes:
