@@ -8,28 +8,18 @@ class CelestialMath:
     @staticmethod
     def get_city_location(city_name: str):
         """
-        Queries Open-Meteo (more permissive than OSM) to get Lat/Lon for a city.
+        Localização fixa do observatório para evitar falhas de rede (Docker LAN-Only).
         """
-        import urllib.parse
-        try:
-            city_encoded = urllib.parse.quote(city_name)
-            url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_encoded}&count=1&language=pt&format=json"
-            r = requests.get(url)
-            if r.status_code == 200:
-                resp = r.json()
-                if "results" in resp and len(resp["results"]) > 0:
-                    data = resp["results"][0]
-                    return {
-                        "lat": float(data["latitude"]),
-                        "lon": float(data["longitude"]),
-                        "mag_dec": -21.0 # Ex: Declinação magnética padrão BR
-                    }
-            else:
-                return {"error": f"API HTTP Error {r.status_code}"}
-        except Exception as e:
-            print("Error in geocoding city lookup:", e)
-            return {"error": f"Python Exception: {str(e)}"}
-        return None
+        # ==========================================================
+        # 📌 CONFIGURAÇÃO FIXA DO OBSERVATÓRIO
+        # Se você mudar de cidade ou precisar trocar a calibração da bússola,
+        # basta alterar os valores exatos abaixo e reiniciar o backend.
+        # ==========================================================
+        return {
+            "lat": -21.7878,       # Latitude de Poços de Caldas - MG
+            "lon": -46.5614,       # Longitude de Poços de Caldas - MG
+            "mag_dec": -22.0       # Declinação magnética aproximada para a região
+        }
 
     @staticmethod
     def get_target_coordinates(target_name: str, lat: float, lon: float):
