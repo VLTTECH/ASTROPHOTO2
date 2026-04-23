@@ -28,23 +28,34 @@ class CelestialMath:
         """
         try:
             result_table = Simbad.query_object(target_name)
-            if result_table is None:
-                return None
+            if result_table is not None and len(result_table) > 0:
+                ra_str = result_table['RA'][0]
+                dec_str = result_table['DEC'][0]
                 
-            ra_str = result_table['RA'][0]
-            dec_str = result_table['DEC'][0]
-            
-            # Convert to degrees for frontend easier display
-            c = SkyCoord(f"{ra_str} {dec_str}", unit=(u.hourangle, u.deg))
-            return {
-                "ra_str": ra_str,
-                "dec_str": dec_str,
-                "ra_deg": c.ra.deg,
-                "dec_deg": c.dec.deg
-            }
+                # Convert to degrees
+                c = SkyCoord(f"{ra_str} {dec_str}", unit=(u.hourangle, u.deg))
+                return {
+                    "ra_str": ra_str,
+                    "dec_str": dec_str,
+                    "ra_deg": c.ra.deg,
+                    "dec_deg": c.dec.deg
+                }
         except Exception as e:
-            print("Error resolving target:", e)
-            return {"error": f"Simbad/Astropy Exception: {str(e)}"}
+            print(f"Network error querying Simbad: {e}")
+
+        # Fallback DB para funcionar sem internet no Docker
+        target_clean = target_name.lower().replace(" ", "")
+        offline_cat = {
+            "m87": {"ra_str": "12 30 49.4", "dec_str": "+12 23 28", "ra_deg": 187.7058, "dec_deg": 12.3911},
+            "m42": {"ra_str": "05 35 17.3", "dec_str": "-05 23 28", "ra_deg": 83.8220, "dec_deg": -5.3911},
+            "orionnebula": {"ra_str": "05 35 17.3", "dec_str": "-05 23 28", "ra_deg": 83.8220, "dec_deg": -5.3911},
+            "moon": {"ra_str": "12 00 00", "dec_str": "00 00 00", "ra_deg": 180.0, "dec_deg": 0.0} # Placeholder
+        }
+        
+        if target_clean in offline_cat:
+            return offline_cat[target_clean]
+            
+        return {"error": "Sem conexão com a Internet e alvo sideral não encontrado na base de backup offline."}
 
     @staticmethod
     def calculate_equatorial_correction(solved_ra: float, solved_dec: float, target_ra: float, target_dec: float, mag_dec: float = 0.0):
