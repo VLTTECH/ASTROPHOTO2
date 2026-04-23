@@ -20,6 +20,9 @@ services:
     container_name: vlttech-frontend
     ports:
       - "80:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     restart: always
