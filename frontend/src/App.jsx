@@ -47,7 +47,8 @@ function App() {
             const data = await res.json();
             setTargetData(data);
         } else {
-            alert('Alvo sideral não foi encontrado na base do Simbad. Digite nome reconhecido (ex: M42).');
+            const errText = await res.text();
+            alert(`Falha no Simbad (${res.status}): ${errText}`);
         }
     } catch(e) {
         console.error(e);

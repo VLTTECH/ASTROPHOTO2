@@ -65,6 +65,8 @@ def search_location(req: CityRequest):
 @app.post("/api/target/calculate")
 def calculate_target(req: TargetRequest):
     data = CelestialMath.get_target_coordinates(req.target_name, req.lat, req.lon)
+    if isinstance(data, dict) and "error" in data:
+        raise HTTPException(status_code=500, detail=data["error"])
     if not data:
         raise HTTPException(status_code=404, detail="Target not found in Simbad")
     return data

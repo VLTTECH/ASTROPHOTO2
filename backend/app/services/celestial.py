@@ -44,7 +44,7 @@ class CelestialMath:
             }
         except Exception as e:
             print("Error resolving target:", e)
-            return None
+            return {"error": f"Simbad/Astropy Exception: {str(e)}"}
 
     @staticmethod
     def calculate_equatorial_correction(solved_ra: float, solved_dec: float, target_ra: float, target_dec: float, mag_dec: float = 0.0):
