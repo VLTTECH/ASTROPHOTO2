@@ -26,22 +26,22 @@ class CelestialMath:
         """
         Fetches J2000 RA/Dec from Simbad and computes current AltAz if needed.
         """
-        try:
-            result_table = Simbad.query_object(target_name)
-            if result_table is not None and len(result_table) > 0:
-                ra_str = result_table['RA'][0]
-                dec_str = result_table['DEC'][0]
-                
-                # Convert to degrees
-                c = SkyCoord(f"{ra_str} {dec_str}", unit=(u.hourangle, u.deg))
-                return {
-                    "ra_str": ra_str,
-                    "dec_str": dec_str,
-                    "ra_deg": c.ra.deg,
-                    "dec_deg": c.dec.deg
-                }
-        except Exception as e:
-            print(f"Network error querying Simbad: {e}")
+        # try:
+        #    result_table = Simbad.query_object(target_name)
+        #    if result_table is not None and len(result_table) > 0:
+        #        ra_str = result_table['RA'][0]
+        #        dec_str = result_table['DEC'][0]
+        #        
+        #        # Convert to degrees
+        #        c = SkyCoord(f"{ra_str} {dec_str}", unit=(u.hourangle, u.deg))
+        #        return {
+        #            "ra_str": ra_str,
+        #            "dec_str": dec_str,
+        #            "ra_deg": c.ra.deg,
+        #            "dec_deg": c.dec.deg
+        #        }
+        # except Exception as e:
+        #    print(f"Network error querying Simbad: {e}")
 
         # Fallback DB para funcionar sem internet no Docker
         target_clean = target_name.lower().replace(" ", "")
