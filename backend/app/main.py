@@ -4,8 +4,8 @@ from pydantic import BaseModel
 import uvicorn
 import json
 import os
-from services.celestial import CelestialMath
-from services.astrometry import AstrometryService
+from app.services.celestial import CelestialMath
+from app.services.astrometry import AstrometryService
 
 app = FastAPI(title="VLTTECH API", version="1.0.0")
 
