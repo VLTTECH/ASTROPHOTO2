@@ -3,20 +3,23 @@ import { motion } from 'framer-motion';
 
 function App() {
   const [configOpen, setConfigOpen] = useState(false);
-  const [citySearch, setCitySearch] = useState('');
-  const [settings, setSettings] = useState({ lat: null, lon: null, mag_dec: null, api_key: '' });
-  const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState({ lat: -21.7878, lon: -46.5614, mag_dec: -22.0, api_key: '' });
 
+  const [targetName, setTargetName] = useState('');
+  const [targetData, setTargetData] = useState(null);
+  const [targetLoading, setTargetLoading] = useState(false);
+
+  // Carrega as configuracoes (API Key) do backend assim que abrir a pagina
   useEffect(() => {
-    if (configOpen) {
-      fetch('/api/settings')
-        .then(r => r.json())
-        .then(data => {
-          if (data) setSettings(data);
-        })
-        .catch(e => console.error("Error loading settings:", e));
-    }
-  }, [configOpen]);
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.api_key !== undefined) {
+          setSettings(s => ({...s, ...data}));
+        }
+      })
+      .catch(e => console.error("Error loading settings:", e));
+  }, []);
 
   const saveSettings = async (newData) => {
     setSettings(newData);
@@ -27,33 +30,34 @@ function App() {
     });
   };
 
-  const handleCitySearch = async () => {
-    if (!citySearch) return;
-    setLoading(true);
+  const handleTargetCalculate = async () => {
+    if (!targetName) return;
+    setTargetLoading(true);
     try {
-        const res = await fetch('/api/location/search', {
+        const res = await fetch('/api/target/calculate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({city_name: citySearch})
+            body: JSON.stringify({
+                target_name: targetName,
+                lat: settings.lat,
+                lon: settings.lon
+            })
         });
         if (res.ok) {
             const data = await res.json();
-            const newSettings = {...settings, lat: data.lat, lon: data.lon, mag_dec: data.mag_dec};
-            await saveSettings(newSettings);
+            setTargetData(data);
         } else {
-            const errText = await res.text();
-            alert(`Falha (${res.status}): ${errText}`);
+            alert('Alvo sideral não foi encontrado na base do Simbad. Digite nome reconhecido (ex: M42).');
         }
-    } catch (e) {
+    } catch(e) {
         console.error(e);
     }
-    setLoading(false);
+    setTargetLoading(false);
   };
 
   const handleClear = async () => {
-     const empty = { lat: null, lon: null, mag_dec: null, api_key: '' };
+     const empty = { lat: -21.7878, lon: -46.5614, mag_dec: -22.0, api_key: '' };
      await saveSettings(empty);
-     setCitySearch('');
   };
 
   return (
@@ -73,17 +77,19 @@ function App() {
         <section className="glass-panel target-section">
           <h2>Celestial Target</h2>
           <div className="input-group">
-            <input type="text" placeholder="e.g., M42, Orion Nebula" />
-            <button className="glass-btn">Calculate RA/Dec</button>
+            <input type="text" value={targetName} onChange={e => setTargetName(e.target.value)} placeholder="e.g., M42, Orion Nebula" />
+            <button className="glass-btn" onClick={handleTargetCalculate} disabled={targetLoading}>
+                {targetLoading ? "Calculating..." : "Calculate RA/Dec"}
+            </button>
           </div>
           <div className="results">
             <div className="stat-box">
-              <span>RA</span>
-              <strong>--h --m --s</strong>
+              <span>RA J2000</span>
+              <strong>{targetData ? targetData.ra_str : "--h --m --s"}</strong>
             </div>
             <div className="stat-box">
-              <span>DEC</span>
-              <strong>--° --' --"</strong>
+              <span>DEC J2000</span>
+              <strong>{targetData ? targetData.dec_str : "--° --' --\""}</strong>
             </div>
           </div>
         </section>
@@ -163,21 +169,13 @@ function App() {
           >
             <h2>System Configuration</h2>
             
-            <div className="input-group" style={{ alignItems: 'flex-end', flexDirection: 'row' }}>
-              <div className="flex-col" style={{flex: 1}}>
-                 <label>Location (City Search)</label>
-                 <input type="text" value={citySearch} onChange={e => setCitySearch(e.target.value)} placeholder="Type city name..." />
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label>Localização do Observatório (Travada fisicamente para evitar quedas)</label>
+              <div style={{fontSize: '0.85rem', color: '#00f2fe', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0, 242, 254, 0.2)'}}>
+                  📍 <strong>Poços de Caldas - MG, Brasil</strong> <br/>
+                  <strong>Lat:</strong> -21.7878 | <strong>Lon:</strong> -46.5614 | <strong>Mag Dec:</strong> -22.0°
               </div>
-              <button className="glass-btn" onClick={handleCitySearch} disabled={loading}>
-                 {loading ? "..." : "Search"}
-              </button>
             </div>
-            
-            {settings.lat !== null && (
-                <div style={{fontSize: '0.85rem', color: '#00f2fe', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0, 242, 254, 0.2)'}}>
-                  📍 <strong>Lat:</strong> {settings.lat} | <strong>Lon:</strong> {settings.lon} | <strong>Mag Dec:</strong> {settings.mag_dec}°
-                </div>
-            )}
 
             <div className="input-group flex-col">
               <label>Astrometry API Key</label>
